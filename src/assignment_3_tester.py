@@ -12,8 +12,10 @@ import Assignment3_Interface as Assignment3
 
 DATABASE_NAME = 'ddsassignment3'
 
+
 def getOpenConnection(user='postgres', password='1234', dbname='ddsassignment3'):
     return psycopg2.connect("dbname='" + dbname + "' user='" + user + "' host='localhost' password='" + password + "'")
+
 
 def createDB(dbname='ddsassignment3'):
     """
@@ -39,35 +41,41 @@ def createDB(dbname='ddsassignment3'):
     con.commit()
     con.close()
 
+
 def loadRatings(ratingstablename, ratingsfilepath, openconnection):
     cur = openconnection.cursor()
 
-    cur.execute("DROP TABLE IF EXISTS "+ratingstablename)
+    cur.execute("DROP TABLE IF EXISTS " + ratingstablename)
 
-    cur.execute("CREATE TABLE "+ratingstablename+" (UserID INT, temp1 VARCHAR(10),  MovieID INT , temp3 VARCHAR(10),  Rating REAL, temp5 VARCHAR(10), Timestamp INT)")
-    
-    loadout = open(ratingsfilepath,'r')
-    
-    cur.copy_from(loadout,ratingstablename,sep = ':',columns=('UserID','temp1','MovieID','temp3','Rating','temp5','Timestamp'))
-    cur.execute("ALTER TABLE "+ratingstablename+" DROP COLUMN temp1, DROP COLUMN temp3,DROP COLUMN temp5, DROP COLUMN Timestamp")
-    
+    cur.execute(
+        "CREATE TABLE " + ratingstablename + " (UserID INT, temp1 VARCHAR(10),  MovieID INT , temp3 VARCHAR(10),  Rating REAL, temp5 VARCHAR(10), Timestamp INT)")
+
+    loadout = open(ratingsfilepath, 'r')
+
+    cur.copy_from(loadout, ratingstablename, sep=':',
+                  columns=('UserID', 'temp1', 'MovieID', 'temp3', 'Rating', 'temp5', 'Timestamp'))
+    cur.execute(
+        "ALTER TABLE " + ratingstablename + " DROP COLUMN temp1, DROP COLUMN temp3,DROP COLUMN temp5, DROP COLUMN Timestamp")
+
     cur.close()
     openconnection.commit()
+
 
 def loadMovies(ratingstablename, ratingsfilepath, openconnection):
     cur = openconnection.cursor()
 
-    cur.execute("DROP TABLE IF EXISTS "+ratingstablename)
+    cur.execute("DROP TABLE IF EXISTS " + ratingstablename)
 
-    cur.execute("CREATE TABLE "+ratingstablename+" (MovieId1 INT,  Title VARCHAR(100),  Genre VARCHAR(100))")
-    
-    loadout = open(ratingsfilepath,'r')
-    
-    cur.copy_from(loadout,ratingstablename,sep = '_',columns=('MovieId1','Title','Genre'))
-    #cur.execute("ALTER TABLE "+ratingstablename+" DROP COLUMN temp1, DROP COLUMN temp3,DROP COLUMN temp5, DROP COLUMN Timestamp")
-    
+    cur.execute("CREATE TABLE " + ratingstablename + " (MovieId1 INT,  Title VARCHAR(100),  Genre VARCHAR(100))")
+
+    loadout = open(ratingsfilepath, 'r')
+
+    cur.copy_from(loadout, ratingstablename, sep='_', columns=('MovieId1', 'Title', 'Genre'))
+    # cur.execute("ALTER TABLE "+ratingstablename+" DROP COLUMN temp1, DROP COLUMN temp3,DROP COLUMN temp5, DROP COLUMN Timestamp")
+
     cur.close()
     openconnection.commit()
+
 
 def deleteTables(ratingstablename, openconnection):
     try:
@@ -94,34 +102,35 @@ def deleteTables(ratingstablename, openconnection):
         if cursor:
             cursor.close()
 
+
 if __name__ == '__main__':
     try:
-	# Creating Database ddsassignment3
-	print "Creating Database named as ddsassignment3"
-	createDB();
-	
-	# Getting connection to the database
-	print "Getting connection from the ddsassignment3 database"
-	con = getOpenConnection();
-	
-        #Loading two tables ratings and movies
-	loadRatings('ratings', 'ratings.dat', con);
-	loadMovies('movies', 'movies.dat', con);
+        # Creating Database ddsassignment3
+        print "Creating Database named as ddsassignment3"
+        createDB()
 
-	# Calling ParallelSort
-	print "Performing Parallel Sort"
-	Assignment3.ParallelSort('ratings', 'Rating', 'parallelSortOutputTable', con);
-	a = raw_input("Check in database and once you are done, press enter to delete all tables: ");
-	deleteTables('ALL', con);
+        # Getting connection to the database
+        print "Getting connection from the ddsassignment3 database"
+        con = getOpenConnection()
 
-        #Loading two tables ratings and movies
-	loadRatings('ratings', 'ratings.dat', con);
-	loadMovies('movies', 'movies.dat', con);
-	# Calling ParallelJoin
-	print "Performing Parallel Join"
-	Assignment3.ParallelJoin('ratings', 'movies', 'MovieId', 'MovieId1', 'parallelJoinOutputTable', con);
-	a = raw_input("Check in database and once you are done, press enter to delete all tables: ");
-	deleteTables('ALL', con);
+        # Loading two tables ratings and movies
+        loadRatings('ratings', 'ratings.dat', con)
+        loadMovies('movies', 'movies.dat', con)
+
+        # Calling ParallelSort
+        print "Performing Parallel Sort"
+        Assignment3.ParallelSort('ratings', 'Rating', 'parallelSortOutputTable', con)
+        a = raw_input("Check in database and once you are done, press enter to delete all tables: ")
+        deleteTables('ALL', con)
+
+        # Loading two tables ratings and movies
+        loadRatings('ratings', 'ratings.dat', con)
+        loadMovies('movies', 'movies.dat', con)
+        # Calling ParallelJoin
+        print "Performing Parallel Join"
+        Assignment3.ParallelJoin('ratings', 'movies', 'MovieId', 'MovieId1', 'parallelJoinOutputTable', con)
+        a = raw_input("Check in database and once you are done, press enter to delete all tables: ")
+        deleteTables('ALL', con)
 
         if con:
             con.close()
